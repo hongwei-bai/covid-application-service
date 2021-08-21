@@ -2,13 +2,12 @@ package com.hongwei.model.covid19
 
 data class CovidAu(
 	val dataVersion: Long,
+	val lastUpdate: String,
 	val dataByDay: List<CovidAuDay>
 )
 
 data class CovidAuDay(
-	var dayDiff: Long,
-	var dateUnixTimeStamp: Long,
-	var dateDisplay: String,
+	var date: Long,
 	var caseByState: List<CovidAuCaseByState> = emptyList(),
 	var caseExcludeFromStates: Int = 0,
 	var caseTotal: Int = 0,
@@ -23,12 +22,6 @@ data class CovidAuCaseByState(
 
 data class CovidAuCaseByPostcode(
 	val postcode: Long,
-	val suburbs: List<String>,
-	val suburbBrief: String,
-	val latitude: Double,
-	val longitude: Double,
-	val accuracy: Int,
-	val state: String,
 	val cases: Int
 )
 

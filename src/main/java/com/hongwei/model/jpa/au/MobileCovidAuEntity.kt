@@ -6,9 +6,12 @@ import javax.persistence.*
 
 
 @Entity
-data class CovidAuEntity(
+data class MobileCovidAuEntity(
 	@Id @Column(nullable = false)
 	val dataVersion: Long = 0L,
+
+	@Column(nullable = false)
+	val lastUpdate: String = "",
 
 	@Lob @Convert(converter = CovidAuListConverter::class) @Column(nullable = true)
 	var dataByDay: List<CovidAuDay> = emptyList()
