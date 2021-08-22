@@ -11,9 +11,9 @@ class CovidAuController {
 	@Autowired
 	private lateinit var auGovCovidService: AuGovCovidService
 
-	@RequestMapping(path = ["/au.do"])
+	@RequestMapping(path = ["/raw.do"])
 	@ResponseBody
-	fun getAuCovid(dataVersion: Long, days: Long? = null): ResponseEntity<*> {
+	fun getCovidRawData(dataVersion: Long, days: Long? = null): ResponseEntity<*> {
 		return ResponseEntity.ok(auGovCovidService.getAuCovidData(dataVersion, days))
 	}
 }

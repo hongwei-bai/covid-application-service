@@ -26,33 +26,36 @@ object CovidAuMapper {
 					state = PostcodeToStateMap.toState(source.postcode),
 					likelyInfectionSource = AuGovCovidLikelyInfectionSource.parseFromString(source.likelySourceOfInfection)
 				)
-			}.groupBy { it.date }.mapNotNull { dayDiffToNotificationMap ->
-				val notificationsByDay = dayDiffToNotificationMap.value
-				dayDiffToNotificationMap.value.firstOrNull()?.let { firstNotification ->
+			}.groupBy { it.date }.filter {
+				val mid = it
+				true
+			}.mapNotNull { dateToNotificationMap ->
+				val recordsByDay = dateToNotificationMap.value
+				dateToNotificationMap.value.firstOrNull()?.let { firstRecordByDay ->
 					CovidAuDay(
-						date = firstNotification.date ?: 0L,
-						caseByState = notificationsByDay.groupBy { it.state }.mapNotNull { stateToNotificationsMap ->
-							stateToNotificationsMap.key?.let { stateCode ->
+						date = firstRecordByDay.date ?: 0L,
+						caseByState = recordsByDay.groupBy { it.state }.mapNotNull { stateToRecordsMap ->
+							stateToRecordsMap.key?.let { stateCode ->
 								CovidAuCaseByState(
 									stateCode = stateCode.name.toUpperCase(),
 									stateName = stateCode.fullName,
-									cases = stateToNotificationsMap.value.size
+									cases = stateToRecordsMap.value.size
 								)
 							}
 						}.sortedByDescending { it.cases },
-						caseExcludeFromStates = notificationsByDay.filter { it.state == null }.size,
-						caseTotal = notificationsByDay.size,
-						caseByPostcode = notificationsByDay.groupBy { it.postcode }.mapNotNull { postcodeToNotificationsMap ->
-							postcodeToNotificationsMap.key?.let { postcode ->
+						caseExcludeFromStates = recordsByDay.filter { it.state == null }.size,
+						caseTotal = recordsByDay.size,
+						caseByPostcode = recordsByDay.groupBy { it.postcode }.mapNotNull { postcodeToRecordsMap ->
+							postcodeToRecordsMap.key?.let { postcode ->
 								CovidAuCaseByPostcode(
 									postcode = postcode,
-									cases = postcodeToNotificationsMap.value.size
+									cases = postcodeToRecordsMap.value.size
 								)
 							}
 						}.sortedByDescending { it.cases }
 					)
 				}
-			}.sortedBy { it.date }
+			}.sortedByDescending { it.date }
 		)
 
 	data class AuGovCovidRecord(
