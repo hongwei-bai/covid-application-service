@@ -1,11 +1,5 @@
 package com.hongwei.model.covid19
 
-data class CovidAu(
-	val dataVersion: Long,
-	val lastUpdate: String,
-	val dataByDay: List<CovidAuDay>
-)
-
 data class CovidAuDay(
 	var date: Long,
 	var caseByState: List<CovidAuCaseByState> = emptyList(),

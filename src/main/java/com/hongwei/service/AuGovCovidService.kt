@@ -69,25 +69,33 @@ class AuGovCovidService {
 				sourceList.add(record)
 			}
 		}
-		mobileCovidAuCsvRepository.save(
-			MobileCovidAuCsvEntity(
-				dataVersion = dataVersion,
-				lastUpdate = lastUpdate,
-				recordsCount = sourceList.size,
-				lastRecordDate = sourceList.last().date,
-				csvPath = csvPath
-			)
-		)
 
-		val entity = CovidAuMapper.map(sourceList, lastUpdate, sourceList.last().date, sourceList.size)
-		if (entityDb != entity) {
+		fun saveCsvRecord(dataVersion: Long) {
+			mobileCovidAuCsvRepository.save(
+				MobileCovidAuCsvEntity(
+					dataVersion = dataVersion,
+					lastUpdate = lastUpdate,
+					recordsCount = sourceList.size,
+					lastRecordDate = sourceList.last().date,
+					csvPath = csvPath
+				)
+			)
+		}
+
+		return if (entityDb?.lastUpdate == lastUpdate
+			&& entityDb.lastRecordDate == sourceList.last().date
+			&& entityDb.recordsCount == sourceList.size) {
+			saveCsvRecord(entityDb.dataVersion)
+			entityDb
+		} else {
 			if (mobileCovidAuRepository.findAll().isNotEmpty()) {
 				mobileCovidAuRepository.deleteAll()
 			}
+			val entity = CovidAuMapper.map(sourceList, lastUpdate, sourceList.last().date, sourceList.size)
 			mobileCovidAuRepository.save(entity)
-			return entity
+			saveCsvRecord(dataVersion)
+			entity
 		}
-		return entityDb
 	}
 
 	private fun getLastUpdateStringFromWeb(doc: Document): String {

@@ -17,14 +17,14 @@ object CovidAuMapper {
 			lastUpdate = lastUpdate,
 			lastRecordDate = lastRecordDate,
 			recordsCount = recordsCount,
-			dataByDay = source.map { source ->
+			dataByDay = source.asSequence().map {
 				AuGovCovidRecord(
-					date = DateTimeParseUtil.parseDate(source.date)?.time,
-					postcode = source.postcode,
-					council = source.lgaName19,
-					greatArea = source.lhd2010Name,
-					state = PostcodeToStateMap.toState(source.postcode),
-					likelyInfectionSource = AuGovCovidLikelyInfectionSource.parseFromString(source.likelySourceOfInfection)
+					date = DateTimeParseUtil.parseDate(it.date)?.time,
+					postcode = it.postcode,
+					council = it.lgaName19,
+					greatArea = it.lhd2010Name,
+					state = PostcodeToStateMap.toState(it.postcode),
+					likelyInfectionSource = AuGovCovidLikelyInfectionSource.parseFromString(it.likelySourceOfInfection)
 				)
 			}.groupBy { it.date }.filter {
 				val mid = it
@@ -55,7 +55,7 @@ object CovidAuMapper {
 						}.sortedByDescending { it.cases }
 					)
 				}
-			}.sortedByDescending { it.date }
+			}.sortedByDescending { it.date }.toList()
 		)
 
 	data class AuGovCovidRecord(
