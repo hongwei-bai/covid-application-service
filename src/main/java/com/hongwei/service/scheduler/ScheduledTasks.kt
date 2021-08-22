@@ -27,6 +27,6 @@ class ScheduledTasks {
     }
 
     companion object {
-        val AustralianCovidUpdateHours = listOf(6, 14, 16, 21)
+        val AustralianCovidUpdateHours = listOf(6, 14, 16, 14)
     }
 }

@@ -11,9 +11,12 @@ import org.apache.log4j.Logger
 object CovidAuMapper {
 	private val logger: Logger = LogManager.getLogger(CovidAuMapper::class.java)
 
-	fun map(source: List<AuGovCovidSource>): MobileCovidAuEntity =
+	fun map(source: List<AuGovCovidSource>, lastUpdate: String, lastRecordDate: String, recordsCount: Int): MobileCovidAuEntity =
 		MobileCovidAuEntity(
 			dataVersion = TimeStampUtil.getTimeVersionWithHour(),
+			lastUpdate = lastUpdate,
+			lastRecordDate = lastRecordDate,
+			recordsCount = recordsCount,
 			dataByDay = source.map { source ->
 				AuGovCovidRecord(
 					date = DateTimeParseUtil.parseDate(source.date)?.time,

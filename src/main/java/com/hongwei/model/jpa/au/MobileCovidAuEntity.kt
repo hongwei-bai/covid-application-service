@@ -13,6 +13,12 @@ data class MobileCovidAuEntity(
 	@Column(nullable = false)
 	val lastUpdate: String = "",
 
+	@Column(nullable = false)
+	val recordsCount: Int = 0,
+
+	@Column(nullable = false)
+	val lastRecordDate: String = "",
+
 	@Lob @Convert(converter = CovidAuListConverter::class) @Column(nullable = true)
 	var dataByDay: List<CovidAuDay> = emptyList()
 )
