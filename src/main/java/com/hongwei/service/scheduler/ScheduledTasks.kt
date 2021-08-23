@@ -13,6 +13,8 @@ class ScheduledTasks {
 	@Autowired
 	private lateinit var auGovCovidService: AuGovCovidService
 
+	private var onStart = true
+
 	// 60 mins : 60 min x 60 s x 1000 ms = 1,800,000, For copy:3600000
 	@Scheduled(fixedRate = 3600000)
 	fun reportCurrentTime() {
@@ -20,7 +22,10 @@ class ScheduledTasks {
 		val hour = sydTime.get(Calendar.HOUR_OF_DAY)
 
 		Thread {
-			if (AustralianCovidUpdateHours.contains(hour)) {
+			if (onStart) {
+				onStart = false
+				auGovCovidService.parseCsv()
+			} else if (AustralianCovidUpdateHours.contains(hour)) {
 				auGovCovidService.parseCsv()
 			}
 		}.start()
