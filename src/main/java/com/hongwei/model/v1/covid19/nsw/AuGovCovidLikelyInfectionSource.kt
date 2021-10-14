@@ -1,4 +1,4 @@
-package com.hongwei.model.covid19
+package com.hongwei.model.v1.covid19.nsw
 
 enum class AuGovCovidLikelyInfectionSource(val display: String) {
     Overseas("Overseas"),

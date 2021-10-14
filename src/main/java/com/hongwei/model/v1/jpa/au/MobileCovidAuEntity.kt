@@ -1,7 +1,7 @@
-package com.hongwei.model.jpa.au
+package com.hongwei.model.v1.jpa.au
 
-import com.hongwei.model.covid19.CovidAuDay
-import com.hongwei.model.jpa.au.converter.CovidAuListConverter
+import com.hongwei.model.v1.covid19.CovidAuDay
+import com.hongwei.model.v1.jpa.au.converter.CovidAuListConverter
 import javax.persistence.*
 
 

@@ -1,8 +1,10 @@
-package com.hongwei.model.covid19
+package com.hongwei.model.v1.covid19
 
-import com.hongwei.model.covid19.auGov.AuGovCovidSource
-import com.hongwei.model.covid19.auGov.PostcodeToStateMap
-import com.hongwei.model.jpa.au.MobileCovidAuEntity
+import com.hongwei.model.common.AuState
+import com.hongwei.model.v1.covid19.nsw.AuGovCovidLikelyInfectionSource
+import com.hongwei.model.v1.covid19.nsw.NswDataSetsSource
+import com.hongwei.model.v1.covid19.nsw.PostcodeToStateMap
+import com.hongwei.model.v1.jpa.au.MobileCovidAuEntity
 import com.hongwei.util.DateTimeParseUtil
 import com.hongwei.util.TimeStampUtil
 import org.apache.log4j.LogManager
@@ -11,7 +13,7 @@ import org.apache.log4j.Logger
 object CovidAuMapper {
 	private val logger: Logger = LogManager.getLogger(CovidAuMapper::class.java)
 
-	fun map(source: List<AuGovCovidSource>, lastUpdate: String, lastRecordDate: String, recordsCount: Int): MobileCovidAuEntity =
+	fun map(source: List<NswDataSetsSource>, lastUpdate: String, lastRecordDate: String, recordsCount: Int): MobileCovidAuEntity =
 		MobileCovidAuEntity(
 			dataVersion = TimeStampUtil.getTimeVersionWithHour(),
 			lastUpdate = lastUpdate,
@@ -59,11 +61,11 @@ object CovidAuMapper {
 		)
 
 	data class AuGovCovidRecord(
-		val date: Long? = null,
-		val postcode: Long? = null,
-		val council: String? = null,
-		val greatArea: String? = null,
-		val state: AuState? = null,
-		val likelyInfectionSource: AuGovCovidLikelyInfectionSource? = null
+			val date: Long? = null,
+			val postcode: Long? = null,
+			val council: String? = null,
+			val greatArea: String? = null,
+			val state: AuState? = null,
+			val likelyInfectionSource: AuGovCovidLikelyInfectionSource? = null
 	)
 }

@@ -1,4 +1,4 @@
-package com.hongwei.model.covid19
+package com.hongwei.model.v1.covid19
 
 data class CovidAuDay(
 	var date: Long,
@@ -18,14 +18,3 @@ data class CovidAuCaseByPostcode(
 	val postcode: Long,
 	val cases: Int
 )
-
-enum class AuState(val fullName: String) {
-	act("Australian Capital Territory"),
-	nsw("New South Wales"),
-	vic("Victoria"),
-	sa("South Australia"),
-	wa("Western Australia"),
-	nt("Northern Territory"),
-	qld("Queensland"),
-	tas("Tasmania")
-}

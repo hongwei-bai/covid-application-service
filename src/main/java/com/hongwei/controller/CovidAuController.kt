@@ -1,6 +1,6 @@
 package com.hongwei.controller
 
-import com.hongwei.service.AuGovCovidService
+import com.hongwei.service.v1.NswDataSetsCovidServiceV1
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/covid/au")
 class CovidAuController {
 	@Autowired
-	private lateinit var auGovCovidService: AuGovCovidService
+	private lateinit var nswDataSetsCovidServiceV1: NswDataSetsCovidServiceV1
 
 	@RequestMapping(path = ["/raw.do"])
 	@ResponseBody
 	fun getCovidRawData(dataVersion: Long, days: Long? = null): ResponseEntity<*> {
-		return ResponseEntity.ok(auGovCovidService.getAuCovidData(dataVersion, days))
+		return ResponseEntity.ok(nswDataSetsCovidServiceV1.getAuCovidData(dataVersion, days))
 	}
 }

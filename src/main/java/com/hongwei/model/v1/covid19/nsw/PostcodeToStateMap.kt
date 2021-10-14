@@ -1,6 +1,6 @@
-package com.hongwei.model.covid19.auGov
+package com.hongwei.model.v1.covid19.nsw
 
-import com.hongwei.model.covid19.AuState
+import com.hongwei.model.v1.covid19.AuState
 
 object PostcodeToStateMap {
 	fun toState(postcode: Long?): AuState? =

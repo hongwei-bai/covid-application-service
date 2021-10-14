@@ -1,6 +1,6 @@
-package com.hongwei.model.covid19.auGov
+package com.hongwei.model.v1.covid19.nsw
 
-data class AuGovCovidSource(
+data class NswDataSetsSource(
 	val date: String,
 	val postcode: Long? = 0L,
 	val likelySourceOfInfection: String,

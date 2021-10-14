@@ -1,4 +1,4 @@
-package com.hongwei.model.jpa.au
+package com.hongwei.model.v1.jpa.au
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query

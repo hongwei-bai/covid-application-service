@@ -12,5 +12,12 @@ object DateTimeParseUtil {
 		null
 	}
 
+	fun parseDateForSlashFormat(dateString: String): Date? = try {
+		val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy")
+		simpleDateFormat.parse(dateString)
+	} catch (e: Exception) {
+		null
+	}
+
 	fun toDisplay(date: Date?): String = SimpleDateFormat("yyyy-MM-dd").format(date)
 }

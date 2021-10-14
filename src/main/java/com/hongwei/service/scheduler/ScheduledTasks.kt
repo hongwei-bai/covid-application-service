@@ -1,6 +1,6 @@
 package com.hongwei.service.scheduler
 
-import com.hongwei.service.AuGovCovidService
+import com.hongwei.service.v1.NswDataSetsCovidServiceV1
 import com.hongwei.util.TimeStampUtil.SYDNEY
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -11,7 +11,7 @@ import java.util.*
 @Component
 class ScheduledTasks {
 	@Autowired
-	private lateinit var auGovCovidService: AuGovCovidService
+	private lateinit var nswDataSetsCovidServiceV1: NswDataSetsCovidServiceV1
 
 	private var onStart = true
 
@@ -24,9 +24,9 @@ class ScheduledTasks {
 		Thread {
 			if (onStart) {
 				onStart = false
-				auGovCovidService.parseCsv()
+				nswDataSetsCovidServiceV1.parseCsv()
 			} else if (AustralianCovidUpdateHours.contains(hour)) {
-				auGovCovidService.parseCsv()
+				nswDataSetsCovidServiceV1.parseCsv()
 			}
 		}.start()
 	}

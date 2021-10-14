@@ -1,10 +1,10 @@
-package com.hongwei.service
+package com.hongwei.service.v1
 
 import com.hongwei.constants.NoContent
 import com.hongwei.constants.ResetContent
-import com.hongwei.model.covid19.CovidAuMapper
-import com.hongwei.model.covid19.auGov.AuGovCovidSource
-import com.hongwei.model.jpa.au.*
+import com.hongwei.model.v1.covid19.CovidAuMapper
+import com.hongwei.model.v1.covid19.nsw.NswDataSetsSource
+import com.hongwei.model.v1.jpa.au.*
 import com.hongwei.util.CsvUtil
 import com.hongwei.util.TimeStampUtil
 import com.hongwei.util.curl.CUrlWrapper
@@ -16,11 +16,11 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class AuGovCovidService {
-	private val logger: Logger = LogManager.getLogger(AuGovCovidService::class.java)
+class NswDataSetsCovidServiceV1 {
+	private val logger: Logger = LogManager.getLogger(NswDataSetsCovidServiceV1::class.java)
 
 	companion object {
-		private const val AU_GOV_COVID_DATA_URL = "https://data.nsw.gov.au/data/dataset/nsw-covid-19-cases-by-location-and-likely-source-of-infection/resource/2776dbb8-f807-4fb2-b1ed-184a6fc2c8aa"
+		private const val CSV_DATA_URL = "https://data.nsw.gov.au/data/dataset/nsw-covid-19-cases-by-location-and-likely-source-of-infection/resource/2776dbb8-f807-4fb2-b1ed-184a6fc2c8aa"
 
 		private const val LOCATE_STRING_OPEN = "\"DCTERMS.Identifier\""
 	}
@@ -43,16 +43,16 @@ class AuGovCovidService {
 
 	fun parseCsv(): MobileCovidAuEntity? {
 		val entityDb = mobileCovidAuRepository.findRecentRecord()
-		val doc = CUrlWrapper.curl(AU_GOV_COVID_DATA_URL) ?: return entityDb
+		val doc = CUrlWrapper.curl(CSV_DATA_URL) ?: return entityDb
 		val lastUpdate = getLastUpdateStringFromWeb(doc)
 		val csvPath = getCSVUrl(doc.toString())
 		val dataVersion = TimeStampUtil.getTimeVersionWithHour()
 		val lines = CsvUtil.readCSVFromUrl(csvPath)
-		val sourceList = mutableListOf<AuGovCovidSource>()
+		val sourceList = mutableListOf<NswDataSetsSource>()
 		lines.forEach {
 			val data = it.split(",")
 			when (data.size) {
-				7 -> AuGovCovidSource(
+				7 -> NswDataSetsSource(
 					date = data.first(),
 					postcode = data[1].toLongOrNull() ?: 0L,
 					likelySourceOfInfection = data[2],
