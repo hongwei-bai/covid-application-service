@@ -3,7 +3,6 @@ package com.hongwei.model.v1.jpa.au.converter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.hongwei.model.v1.covid19.CovidAuDay
-import com.hongwei.model.v2.jpa.au.AllStateDataV2
 import java.lang.reflect.Type
 import javax.persistence.AttributeConverter
 import javax.persistence.Converter

@@ -2,8 +2,8 @@ package com.hongwei.service
 
 import com.hongwei.model.common.AuState
 import com.hongwei.model.v1.covid19.vic.VicDataSetsSource
+import com.hongwei.model.v2.jpa.au.StateLGADataV2
 import com.hongwei.model.v2.jpa.au.LGADataV2
-import com.hongwei.model.v2.jpa.au.LGADayDataV2
 import com.hongwei.util.CsvUtil
 import com.hongwei.util.DateTimeParseUtil.parseDateForSlashFormat
 import com.hongwei.util.TimeStampUtil
@@ -17,45 +17,45 @@ class VicDataSetsCovidService : StateDataSetsServiceInterface {
     private val logger: Logger = LogManager.getLogger(VicDataSetsCovidService::class.java)
 
     companion object {
-        private const val CSV_DATA_URL = "https://discover.data.vic.gov.au/dataset/victorian-coronavirus-data/resource/e3c72a49-6752-4158-82e6-116bea8f55c8"
+        private const val CSV_DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwXSqlP56q78lZKxc092o6UuIyi7VqOIQj6RM4QmlVPgtJZfbgzv0a3X7wQQkhNu8MFolhVwMy4VnF/pub?gid=0&single=true&output=csv"
     }
 
-    override fun parseCsv(): LGADataV2 {
+    override fun parseCsv(): StateLGADataV2 {
         val dataVersion = TimeStampUtil.getTimeVersionWithHour()
         val lines = CsvUtil.readCSVFromUrl(CSV_DATA_URL)
         val sourceList = mutableListOf<VicDataSetsSource>()
         lines.forEach {
             val data = it.split(",")
-            sourceList.add(VicDataSetsSource(
-                    postcode = data.first().toInt(),
-                    population = data[1].toLong(),
-                    active = data[2].toInt(),
-                    cases = data[3].toInt(),
-                    rate = data[4].toFloat(),
-                    new = data[5].toInt(),
-                    band = data[6].toInt(),
-                    data_date = data[5],
-                    file_processed_date = data[6]
-            ))
+            val dataItem = when (data.size) {
+                9 -> VicDataSetsSource(
+                        postcode = data.first().toInt(),
+                        population = data[1].toLongOrNull() ?: 0,
+                        active = data[2].toLongOrNull() ?: 0,
+                        cases = data[3].toLongOrNull() ?: 0,
+                        rate = data[4].toFloatOrNull() ?: 0f,
+                        new = data[5].toLongOrNull() ?: 0,
+                        band = data[6].toLongOrNull() ?: 0,
+                        data_date = data[7],
+                        file_processed_date = data[8]
+                )
+                else -> {
+                    logger.debug("unrecognized record: $data")
+                    null
+                }
+            }
+            dataItem?.let { sourceList.add(dataItem) }
         }
 
-        sourceList.sortByDescending { it.data_date }
-        val lastCase = sourceList.first()
-        val lastDayCases = sourceList.filter { it.data_date == lastCase.data_date }
-        return LGADataV2(
-                dataCollectTimeStamp = dataVersion,
+        return StateLGADataV2(
                 lastUpdate = null,
                 lastRecordTimeStamp = sourceList.firstOrNull()?.data_date?.parseDate() ?: 0,
                 state = AuState.Vic.name,
-                data = LGADayDataV2(
-                        sourceList.firstOrNull()?.data_date?.parseDate() ?: 0,
-                        lastDayCases.size
-                ),
-                historyData = sourceList.groupBy { it.data_date }.map {
-                    LGADayDataV2(
-                            it.key.parseDate() ?: 0,
-                            it.value.size
-                    )
+                lga = sourceList.map {
+                    LGADataV2(it.postcode, it.cases)
+                }.filter {
+                    it.cases > 0
+                }.sortedByDescending {
+                    it.cases
                 }
         )
     }

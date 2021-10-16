@@ -2,8 +2,8 @@ package com.hongwei.service
 
 import com.hongwei.model.common.AuState
 import com.hongwei.model.v1.covid19.nsw.NswDataSetsSource
+import com.hongwei.model.v2.jpa.au.StateLGADataV2
 import com.hongwei.model.v2.jpa.au.LGADataV2
-import com.hongwei.model.v2.jpa.au.LGADayDataV2
 import com.hongwei.util.CsvUtil
 import com.hongwei.util.DateTimeParseUtil
 import com.hongwei.util.TimeStampUtil
@@ -24,11 +24,10 @@ class NswDataSetsCovidService : StateDataSetsServiceInterface {
         private const val LOCATE_STRING_OPEN = "\"DCTERMS.Identifier\""
     }
 
-    override fun parseCsv(): LGADataV2? {
+    override fun parseCsv(): StateLGADataV2? {
         val doc = CUrlWrapper.curl(CSV_DATA_URL) ?: return null
         val lastUpdate = getLastUpdateStringFromWeb(doc)
         val csvPath = getCSVUrl(doc.toString())
-        val dataVersion = TimeStampUtil.getTimeVersionWithHour()
         val lines = CsvUtil.readCSVFromUrl(csvPath)
         val sourceList = mutableListOf<NswDataSetsSource>()
         lines.forEach {
@@ -55,20 +54,18 @@ class NswDataSetsCovidService : StateDataSetsServiceInterface {
         sourceList.sortByDescending { it.date }
         val lastCase = sourceList.first()
         val lastDayCases = sourceList.filter { it.date == lastCase.date }
-        return LGADataV2(
-                dataCollectTimeStamp = dataVersion,
+        return StateLGADataV2(
                 lastUpdate = lastUpdate,
                 lastRecordTimeStamp = sourceList.firstOrNull()?.date?.parseDate() ?: 0,
                 state = AuState.Nsw.name,
-                data = LGADayDataV2(
-                        sourceList.firstOrNull()?.date?.parseDate() ?: 0,
-                        lastDayCases.size
-                ),
-                historyData = sourceList.groupBy { it.date }.map {
-                    LGADayDataV2(
-                            it.key.parseDate() ?: 0,
-                            it.value.size
-                    )
+                lga = lastDayCases.groupBy {
+                    it.postcode
+                }.mapNotNull {
+                    it.key?.let { postcode ->
+                        LGADataV2(postcode.toInt(), it.value.size.toLong())
+                    }
+                }.sortedByDescending {
+                    it.cases
                 }
         )
     }
@@ -94,5 +91,7 @@ class NswDataSetsCovidService : StateDataSetsServiceInterface {
 
     private fun String?.parseDate(): Long? = this?.let {
         DateTimeParseUtil.parseDateForSlashFormat(it)?.time
+    } ?: this?.let {
+        DateTimeParseUtil.parseDate(it)?.time
     }
 }

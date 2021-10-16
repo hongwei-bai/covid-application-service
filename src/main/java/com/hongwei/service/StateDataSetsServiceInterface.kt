@@ -1,7 +1,7 @@
 package com.hongwei.service
 
-import com.hongwei.model.v2.jpa.au.LGADataV2
+import com.hongwei.model.v2.jpa.au.StateLGADataV2
 
 interface StateDataSetsServiceInterface {
-    fun parseCsv(): LGADataV2?
+    fun parseCsv(): StateLGADataV2?
 }

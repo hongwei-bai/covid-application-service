@@ -1,7 +1,10 @@
 package com.hongwei.service.scheduler
 
+import com.hongwei.service.AuCovidService
 import com.hongwei.service.v1.NswDataSetsCovidServiceV1
 import com.hongwei.util.TimeStampUtil.SYDNEY
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -10,28 +13,39 @@ import java.util.*
 
 @Component
 class ScheduledTasks {
-	@Autowired
-	private lateinit var nswDataSetsCovidServiceV1: NswDataSetsCovidServiceV1
+    @Autowired
+    private lateinit var nswDataSetsCovidServiceV1: NswDataSetsCovidServiceV1
 
-	private var onStart = true
+    @Autowired
+    private lateinit var auCovidService: AuCovidService
 
-	// 60 mins : 60 min x 60 s x 1000 ms = 1,800,000, For copy:3600000
-	@Scheduled(fixedRate = 3600000)
-	fun reportCurrentTime() {
-		val sydTime = Calendar.getInstance(TimeZone.getTimeZone(SYDNEY))
-		val hour = sydTime.get(Calendar.HOUR_OF_DAY)
+    private var onStart = true
 
-		Thread {
-			if (onStart) {
-				onStart = false
-				nswDataSetsCovidServiceV1.parseCsv()
-			} else if (AustralianCovidUpdateHours.contains(hour)) {
-				nswDataSetsCovidServiceV1.parseCsv()
-			}
-		}.start()
-	}
+    // 60 mins : 60 min x 60 s x 1000 ms = 1,800,000, For copy:3600000
+    @Scheduled(fixedRate = 3600000)
+    fun reportCurrentTime() {
+        val sydTime = Calendar.getInstance(TimeZone.getTimeZone(SYDNEY))
+        val hour = sydTime.get(Calendar.HOUR_OF_DAY)
 
-	companion object {
-		val AustralianCovidUpdateHours = listOf(0, 6, 8, 10, 12, 14, 16, 18, 20, 22)
-	}
+//        runBlocking {
+//            when {
+//                onStart -> {
+//                    onStart = false
+//                    nswDataSetsCovidServiceV1.parseCsv()
+//                    delay(5000)
+//                    auCovidService.fetchDataFromSource()
+//                }
+//                AustralianCovidUpdateHours.contains(hour) -> {
+//                    nswDataSetsCovidServiceV1.parseCsv()
+//                    delay(5000)
+//                    auCovidService.fetchDataFromSource()
+//                }
+//                else -> Unit
+//            }
+//        }
+    }
+
+    companion object {
+        val AustralianCovidUpdateHours = listOf(0, 6, 8, 10, 12, 14, 16, 18, 20, 22)
+    }
 }

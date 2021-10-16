@@ -1,8 +1,10 @@
 package com.hongwei.service
 
-import com.hongwei.model.v1.jpa.au.MobileCovidAuEntity
-import com.hongwei.model.v1.jpa.au.MobileCovidAuRepository
-import com.hongwei.service.v1.NswDataSetsCovidServiceV1
+import com.hongwei.constants.ResetContent
+import com.hongwei.model.common.AuState
+import com.hongwei.model.v2.jpa.au.MobileCovidAuEntityV2
+import com.hongwei.model.v2.jpa.au.MobileCovidAuRepositoryV2
+import com.hongwei.util.TimeStampUtil.getTimeVersionWithHour
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,7 +16,7 @@ class AuCovidService {
     private val logger: Logger = LogManager.getLogger(AuCovidService::class.java)
 
     @Autowired
-    private lateinit var mobileCovidAuRepository: MobileCovidAuRepository
+    private lateinit var mobileCovidAuRepositoryV2: MobileCovidAuRepositoryV2
 
     @Autowired
     private lateinit var nswDataSetsCovidService: NswDataSetsCovidService
@@ -25,17 +27,48 @@ class AuCovidService {
     @Autowired
     private lateinit var covidLiveCurlService: CovidLiveCurlService
 
-    fun getAuCovidData(dataVersion: Long, inDays: Long?): MobileCovidAuEntity {
-        throw InternalError()
+    fun getAuCovidData(dataVersion: Long, followedSuburbs: String? = null): MobileCovidAuEntityV2? {
+        val entity = mobileCovidAuRepositoryV2.findRecentRecord().firstOrNull()
+        if (entity?.dataVersion == dataVersion) {
+            throw ResetContent
+        }
+        entity?.apply {
+            followedSuburbs?.let {
+                val followedPostcodeList = followedSuburbs.split(",").mapNotNull {
+                    it.trim().toIntOrNull()
+                }
+                lgaData.forEach { stateLgaData ->
+                    stateLgaData.apply {
+                        lga = lga.filter {
+                            followedPostcodeList.contains(it.postcode)
+                        }
+                    }
+                }
+            }
+        }
+        return entity
     }
 
-    fun parseCsv(): MobileCovidAuEntity? {
+    fun fetchDataFromSource(): MobileCovidAuEntityV2 {
         val stateSource: List<StateDataSetsServiceInterface> = listOf(nswDataSetsCovidService, vicDataSetsCovidService)
-        
-        stateSource.forEach {
 
+        val stateData = covidLiveCurlService.parseWebContent()
+        val lgaData = stateSource.mapNotNull {
+            it.parseCsv()
         }
 
-        throw InternalError()
+        val entity = MobileCovidAuEntityV2(
+                dataVersion = getTimeVersionWithHour(),
+                nationData = stateData?.firstOrNull {
+                    it.state == AuState.Total.name
+                },
+                stateData = stateData?.filter {
+                    it.state != AuState.Total.name
+                } ?: emptyList(),
+                lgaData = lgaData
+        )
+        mobileCovidAuRepositoryV2.save(entity)
+
+        return entity
     }
 }
