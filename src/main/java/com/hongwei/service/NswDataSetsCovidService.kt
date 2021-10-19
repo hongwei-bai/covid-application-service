@@ -43,7 +43,7 @@ class NswDataSetsCovidService : StateDataSetsServiceInterface {
                         lgaName19 = data[6]
                 )
                 else -> {
-                    logger.debug("unrecognized record: $data")
+                    logger.error("unrecognized record: $data")
                     null
                 }
             }?.let { record ->

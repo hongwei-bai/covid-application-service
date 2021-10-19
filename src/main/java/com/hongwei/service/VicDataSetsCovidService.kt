@@ -2,13 +2,14 @@ package com.hongwei.service
 
 import com.hongwei.model.common.AuState
 import com.hongwei.model.v1.covid19.vic.VicDataSetsSource
-import com.hongwei.model.v2.jpa.au.StateLGADataV2
 import com.hongwei.model.v2.jpa.au.LGADataV2
+import com.hongwei.model.v2.jpa.au.StateLGADataV2
 import com.hongwei.util.CsvUtil
 import com.hongwei.util.DateTimeParseUtil.parseDateForSlashFormat
-import com.hongwei.util.TimeStampUtil
+import com.hongwei.util.curl.CUrlWrapper
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
+import org.jsoup.nodes.Document
 import org.springframework.stereotype.Service
 
 
@@ -17,12 +18,13 @@ class VicDataSetsCovidService : StateDataSetsServiceInterface {
     private val logger: Logger = LogManager.getLogger(VicDataSetsCovidService::class.java)
 
     companion object {
-        private const val CSV_DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwXSqlP56q78lZKxc092o6UuIyi7VqOIQj6RM4QmlVPgtJZfbgzv0a3X7wQQkhNu8MFolhVwMy4VnF/pub?gid=0&single=true&output=csv"
+        private const val VIC_DATASETS_URL = "https://discover.data.vic.gov.au/dataset/victorian-coronavirus-data/resource/e3c72a49-6752-4158-82e6-116bea8f55c8"
     }
 
-    override fun parseCsv(): StateLGADataV2 {
-        val dataVersion = TimeStampUtil.getTimeVersionWithHour()
-        val lines = CsvUtil.readCSVFromUrl(CSV_DATA_URL)
+    override fun parseCsv(): StateLGADataV2? {
+        val doc = CUrlWrapper.curl(VIC_DATASETS_URL) ?: return null
+        val csvPath = getCSVUrl(doc)
+        val lines = CsvUtil.readCSVFromUrl(csvPath)
         val sourceList = mutableListOf<VicDataSetsSource>()
         lines.forEach {
             val data = it.split(",")
@@ -39,7 +41,7 @@ class VicDataSetsCovidService : StateDataSetsServiceInterface {
                         file_processed_date = data[8]
                 )
                 else -> {
-                    logger.debug("unrecognized record: $data")
+                    logger.error("unrecognized record: $data")
                     null
                 }
             }
@@ -59,6 +61,9 @@ class VicDataSetsCovidService : StateDataSetsServiceInterface {
                 }
         )
     }
+
+    private fun getCSVUrl(doc: Document): String =
+            doc.getElementsByClass("resource-url-analytics").attr("href")
 
     private fun String?.parseDate(): Long? = this?.let {
         parseDateForSlashFormat(it)?.time

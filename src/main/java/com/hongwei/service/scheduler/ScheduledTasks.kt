@@ -5,6 +5,8 @@ import com.hongwei.service.v1.NswDataSetsCovidServiceV1
 import com.hongwei.util.TimeStampUtil.SYDNEY
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.apache.log4j.LogManager
+import org.apache.log4j.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -13,6 +15,8 @@ import java.util.*
 
 @Component
 class ScheduledTasks {
+    private val logger: Logger = LogManager.getLogger(ScheduledTasks::class.java)
+
     @Autowired
     private lateinit var nswDataSetsCovidServiceV1: NswDataSetsCovidServiceV1
 
@@ -27,22 +31,22 @@ class ScheduledTasks {
         val sydTime = Calendar.getInstance(TimeZone.getTimeZone(SYDNEY))
         val hour = sydTime.get(Calendar.HOUR_OF_DAY)
 
-//        runBlocking {
-//            when {
-//                onStart -> {
-//                    onStart = false
-//                    nswDataSetsCovidServiceV1.parseCsv()
-//                    delay(5000)
-//                    auCovidService.fetchDataFromSource()
-//                }
-//                AustralianCovidUpdateHours.contains(hour) -> {
-//                    nswDataSetsCovidServiceV1.parseCsv()
-//                    delay(5000)
-//                    auCovidService.fetchDataFromSource()
-//                }
-//                else -> Unit
-//            }
-//        }
+        runBlocking {
+            when {
+                onStart -> {
+                    logger.info("[ON_START]start running tasks...")
+                    onStart = false
+                    auCovidService.fetchDataFromSource()
+                    logger.info("[ON_START]run V2 task completed.")
+                }
+                AustralianCovidUpdateHours.contains(hour) -> {
+                    logger.info("[scheduled][$sydTime][h$hour]start running tasks...")
+                    auCovidService.fetchDataFromSource()
+                    logger.info("[scheduled][$sydTime][h$hour]run V2 task completed.")
+                }
+                else -> Unit
+            }
+        }
     }
 
     companion object {
