@@ -8,5 +8,9 @@ data class StateDataV2(
 
         val overseasCases: Long = 0,
 
-        val newCases: Long = 0
+        val newCases: Long = 0,
+
+        val isObsoletedData: Boolean = false,
+
+        var lastValidDataVersion: Long = 0
 )

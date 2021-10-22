@@ -8,8 +8,8 @@ import javax.persistence.AttributeConverter
 import javax.persistence.Converter
 
 @Converter
-class StateDataConverter : AttributeConverter<StateDataV2, String?> {
-    override fun convertToDatabaseColumn(obj: StateDataV2): String? {
+class StateDataConverter : AttributeConverter<StateDataV2?, String?> {
+    override fun convertToDatabaseColumn(obj: StateDataV2?): String? {
         return obj.let { Gson().toJson(obj) }
     }
 

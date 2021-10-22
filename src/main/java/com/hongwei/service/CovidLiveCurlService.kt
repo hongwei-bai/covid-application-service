@@ -34,12 +34,12 @@ class CovidLiveCurlService {
 
         val evenList = section.first().getElementsByClass("even")
         val oddList = section.first().getElementsByClass("odd")
-        return listOf(evenList, oddList).flatten().map {
+        return listOf(evenList, oddList).flatten().mapNotNull {
             parseStateDoc(it)
         }
     }
 
-    private fun parseStateDoc(stateElement: Element): StateDataV2 {
+    private fun parseStateDoc(stateElement: Element): StateDataV2? {
         val stateString = stateElement.getElementsByClass("COL1 STATE").first()
                 .getElementsByTag("a").attr("href")
                 .replace("/", "")
@@ -49,15 +49,19 @@ class CovidLiveCurlService {
                 .getElementsByClass("COL3 OSEAS").toString())
         val netCases = parseNumberInHtmlTagByRegex(stateElement
                 .getElementsByClass("COL5 NET").toString())
-        return StateDataV2(
-                state = stateString.mapStateString(),
-                totalCases = totalCases,
-                overseasCases = overseasCases,
-                newCases = netCases
-        )
+        return if (netCases != null && totalCases != null) {
+            StateDataV2(
+                    state = stateString.mapStateString(),
+                    totalCases = totalCases,
+                    overseasCases = overseasCases ?: 0,
+                    newCases = netCases
+            )
+        } else {
+            null
+        }
     }
 
-    private fun parseNumberInHtmlTagByRegex(line: String): Long =
+    private fun parseNumberInHtmlTagByRegex(line: String): Long? =
             try {
                 val pattern = Pattern.compile(PATTERN_NUMBER_IN_HTML_TAG)
                 val matcher = pattern.matcher(line)
@@ -67,11 +71,11 @@ class CovidLiveCurlService {
                             .replace("</", "")
                             .replace(",", "")
                             .toLong()
-                } else 0
+                } else null
             } catch (e: Exception) {
                 logger.error("parseNumberInHtmlTagByRegex exception caught: ${e.localizedMessage}")
                 e.printStackTrace()
-                0
+                null
             }
 
     private fun String.mapStateString(): String =
