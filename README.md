@@ -1,5 +1,7 @@
 # covid-application-service
 
+CI build state: [![CircleCI](https://circleci.com/gh/hongwei-bai/covid-application-service/tree/main.svg?style=svg)](https://circleci.com/gh/hongwei-bai/covid-application-service/tree/main)
+
 COVID application service is specifically for mobile use. 
 
 It routinely check Covid-19 data from NSW goverenment dataset and covert it into its database.
